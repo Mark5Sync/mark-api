@@ -1,0 +1,19 @@
+{
+    "name": "marksync/api",
+    "description": "api",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "markapi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "II",
+            "email": "no_soap_0@mail.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
