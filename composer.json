@@ -1,11 +1,11 @@
 {
-    "name": "marksync/api",
+    "name": "marksync\/api",
     "description": "api",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "markapi\\": "src/"
+            "markapi\\": "src\/"
         }
     },
     "authors": [
@@ -15,5 +15,10 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+        "markdi\/markdi": "dev-main"
+    },
+    "scripts": {
+        "mark": "php vendor\/bin\/mark"
+    }
 }
