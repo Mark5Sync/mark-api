@@ -4,8 +4,10 @@
 namespace markapi;
 
 use Attribute;
+use markdi\NotMark;
 
-#[Attribute()]
+#[NotMark]
+#[Attribute]
 class Test
 {
 

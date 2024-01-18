@@ -14,11 +14,10 @@
             "email": "no_soap_0@mail.ru"
         }
     ],
-    "minimum-stability": "dev",
-    "require": {
-        "markdi\/markdi": "dev-main"
-    },
     "scripts": {
         "mark": "php vendor\/bin\/mark"
+    },
+    "require": {
+        "markdi/markdi": "^3.2"
     }
 }

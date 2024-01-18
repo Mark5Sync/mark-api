@@ -4,18 +4,27 @@ namespace markapi;
 
 use markapi\_markers\tools;
 
-abstract class Api extends Doc 
+abstract class Api extends Doc
 {
     use tools;
+
+    public $prefix = 'api';
 
     final function __construct()
     {
         header('Content-Type: application/json');
+        ini_set('display_errors', 0);
+
         $result = [];
 
-        try {
+        $this->request->setPrefix($this->prefix);
 
-            $result['data'] = $this->applytask($this->request->task, $this->request->props);
+        $task = $this->request->task;
+        $props = $this->request->props;
+
+
+        try {
+            $result['data'] = $this->applytask($task, $props);
         } catch (\Throwable $th) {
             $result['error'] = [
                 'message' => $th->getMessage(),
@@ -35,5 +44,4 @@ abstract class Api extends Doc
 
         return $this->{$taskName}(...$props);
     }
-
 }

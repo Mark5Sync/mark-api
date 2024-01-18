@@ -2,9 +2,11 @@
 
 namespace markapi;
 
+use markdi\NotMark;
 use ReflectionClass;
 use ReflectionMethod;
 
+#[NotMark]
 abstract class Doc
 {
 

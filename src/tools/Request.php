@@ -2,6 +2,8 @@
 
 namespace markapi\tools;
 
+use markdi\MarkInstance;
+
 
 class Request
 {
@@ -9,12 +11,12 @@ class Request
     public array $props;
 
 
-    function __construct()
+    function setPrefix(string $prefix = 'api')
     {
         $request_uri = $_SERVER['REQUEST_URI'];
 
         // Определяем регулярное выражение для извлечения значения параметра
-        $pattern = '/\/api\/([\w_]+)?\??/';
+        $pattern = "/\/$prefix\/([\w_]+)?\??/";
 
         // Ищем соответствие в строке запроса
         if (preg_match($pattern, $request_uri, $matches)) {
@@ -25,4 +27,5 @@ class Request
         $this->task = $param_value ? $param_value : 'index';
         $this->props = !empty($_POST) ? $_POST : $_GET;
     }
+
 }
