@@ -24,8 +24,16 @@ class Request
             $param_value = isset($matches[1]) ? $matches[1] : null;
         }
 
-        $this->task = $param_value ? $param_value : 'index';
-        $this->props = !empty($_POST) ? $_POST : $_GET;
-    }
+        $post = file_get_contents('php://input');
+        if ($post)
+            $post = json_decode($post, true);
 
+        $this->task = $param_value ? $param_value : 'index';
+        $this->props = !empty($post)
+            ? $post
+            : (!empty($_POST)
+                ? $_POST
+                : $_GET
+            );
+    }
 }
