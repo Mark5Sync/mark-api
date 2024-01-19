@@ -21,9 +21,12 @@ abstract class Doc
         });
 
 
-        $result = [];
+        $resultOutput = [];
+        $resultMethods = [];
         foreach ($methods as $method) {
             $methodName = $method->getName();
+            $resultMethods[$methodName] = [];
+            $typeName = ucwords($methodName);
             $reflectionMethod = $reflectionClass->getMethod($method->getName());
 
 
@@ -38,20 +41,22 @@ abstract class Doc
                     $type = array_map(fn ($tp) => "$tp", $type->getTypes());
 
 
-                $result[$methodName]['_args'][$parameter->getName()] = $type;
+                $resultOutput["{$typeName}Input"][$parameter->getName()] = $type;
+                $resultMethods[$methodName]['input'] = true;
             }
 
             $tests = $method->getAttributes(Test::class);
             foreach ($tests as $test) {
                 $props = ($test->newInstance())->props;
 
-                $result[$methodName]['_results'][] = [
-                    'args' => empty($props) ? null : json_encode($props),
-                    'result' => $this->{$methodName}(...$props)
-                ];
+                $resultOutput["{$typeName}Output"] = $this->{$methodName}(...$props);
+                $resultMethods[$methodName]['output'] = true;
             }
         }
 
-        return $result;
+        return [
+            'methods' => $resultMethods,
+            'types' => $resultOutput,
+        ];
     }
 }
