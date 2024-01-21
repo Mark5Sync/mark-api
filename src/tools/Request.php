@@ -2,14 +2,11 @@
 
 namespace markapi\tools;
 
-use markdi\MarkInstance;
-
-
 class Request
 {
     public string $task;
-    public array $props;
-
+    public array  $props;
+    public string $mode;
 
     function setPrefix(string $prefix = 'api')
     {

@@ -4,6 +4,7 @@ namespace markapi;
 
 use markapi\_markers\location;
 use markapi\_markers\tools;
+use ReflectionMethod;
 
 abstract class Api extends Doc
 {
@@ -43,11 +44,18 @@ abstract class Api extends Doc
 
 
 
-    private function applyTask($taskName, $props)
+    private function applyTask(string $taskName, $props)
     {
         if (!method_exists($this, $taskName))
             throw new \Exception("task is Undefined [$taskName]", 1);
 
+        $this->checkMode($taskName, $props);
+
         return $this->{$taskName}(...$props);
+    }
+
+
+    private function checkMode(string $taskName, $props){
+        $reflection = new ReflectionMethod($this, $taskName);
     }
 }
