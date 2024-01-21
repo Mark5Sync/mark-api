@@ -2,11 +2,13 @@
 
 namespace markapi;
 
+use markapi\_markers\location;
 use markapi\_markers\tools;
 
 abstract class Api extends Doc
 {
     use tools;
+    use location;
 
     public $prefix = 'api';
 
@@ -31,6 +33,10 @@ abstract class Api extends Doc
                 'code' => $th->getCode(),
             ];
         }
+
+
+        if ($this->redirect->to);
+            $result['redirect'] = $this->redirect->to;
 
         exit(json_encode($result));
     }
