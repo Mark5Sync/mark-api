@@ -69,6 +69,7 @@ abstract class Doc
 
             $tests = $method->getAttributes(Test::class);
             foreach ($tests as $test) {
+                $this->request->debugClear();
                 $props = ($test->newInstance())->props;
 
                 try {
@@ -89,6 +90,7 @@ abstract class Doc
                 $testResult = [];
 
                 foreach ($propsList as $props) {
+                    $this->request->debugClear();
                     $props = is_array($props) ? $props : [$props];
                     try {
                         $testResult[] = $this->{$methodName}(...$props);
