@@ -71,7 +71,13 @@ abstract class Doc
             foreach ($tests as $test) {
                 $props = ($test->newInstance())->props;
 
-                $resultOutput["{$typeName}Output"] = $this->{$methodName}(...(array)$props);
+                try {
+                    $result = $this->{$methodName}(...(array)$props);
+                } catch (\Throwable $th) {
+                    $result = null; //new Join($typeName, ['Error' => $th->getMessage()]);
+                }
+
+                $resultOutput["{$typeName}Output"] = $result;
                 $resultMethods[$methodName]['output'] = true;
             }
 
@@ -84,7 +90,11 @@ abstract class Doc
 
                 foreach ($propsList as $props) {
                     $props = is_array($props) ? $props : [$props];
-                    $testResult[] = $this->{$methodName}(...$props);
+                    try {
+                        $testResult[] = $this->{$methodName}(...$props);
+                    } catch (\Throwable $th) {
+                        $testResult[] = null; //new Join($typeName, ['Error' => $th->getMessage()]);
+                    }
                 }
 
                 $resultOutput["{$typeName}Output"] = new Join($typeName, $testResult);
@@ -108,8 +118,8 @@ abstract class Doc
         $tests = $method->getAttributes(Test::class);
         foreach ($tests as $test) {
             $testProps = ($test->newInstance())->props;
-            
-            if ($testProps == $props){
+
+            if ($testProps == $props) {
                 $this->request->isDebug = true;
                 return;
             }
@@ -123,7 +133,7 @@ abstract class Doc
             $testResult = [];
 
             foreach ($propsList as $testProps) {
-                if ($testProps == $props){
+                if ($testProps == $props) {
                     $this->request->isDebug = true;
                     return;
                 }
