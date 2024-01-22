@@ -7,6 +7,7 @@ class Request
     public string $task;
     public array  $props;
     public bool $isDebug = false;
+    public array $debugProps = [];
 
     function setPrefix(string $prefix = 'api')
     {
@@ -32,5 +33,21 @@ class Request
                 ? $_POST
                 : $_GET
             );
+    }
+
+
+    function debugClear(){
+        $this->debugProps = [];
+    }
+
+    function debugWrite(string $key, $value){
+        $this->debugProps[$key] = $value;
+    }
+
+    function debugRead(string $key){
+        if (!isset($this->debugProps[$key]))
+            return null;
+
+        return $this->debugProps[$key];
     }
 }
