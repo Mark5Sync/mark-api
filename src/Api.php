@@ -3,12 +3,9 @@
 namespace markapi;
 
 use markapi\_markers\location;
-use markapi\_markers\tools;
-use ReflectionMethod;
 
 abstract class Api extends Doc
 {
-    use tools;
     use location;
 
     public $prefix = 'api';
@@ -35,8 +32,7 @@ abstract class Api extends Doc
             ];
         }
 
-
-        if ($this->redirect->to);
+        if ($this->redirect->to)
             $result['redirect'] = $this->redirect->to;
 
         exit(json_encode($result));
@@ -55,7 +51,5 @@ abstract class Api extends Doc
     }
 
 
-    private function checkMode(string $taskName, $props){
-        $reflection = new ReflectionMethod($this, $taskName);
-    }
+    
 }

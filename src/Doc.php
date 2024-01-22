@@ -2,6 +2,7 @@
 
 namespace markapi;
 
+use markapi\_markers\location;
 use markapi\_types\Join;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
@@ -12,6 +13,7 @@ use ReflectionMethod;
 #[NotMark]
 abstract class Doc
 {
+    use location;
 
     private function ownMethods()
     {
@@ -36,6 +38,7 @@ abstract class Doc
 
     protected function __DOC__()
     {
+        $this->request->isDebug = true;
         $reflectionClass = new ReflectionClass($this);
 
         $resultOutput = [];
@@ -94,5 +97,37 @@ abstract class Doc
             'methods' => $resultMethods,
             'types' => $resultOutput,
         ];
+    }
+
+
+    protected function checkMode(string $methodName, $props)
+    {
+        $method = new ReflectionMethod($this, $methodName);
+
+
+        $tests = $method->getAttributes(Test::class);
+        foreach ($tests as $test) {
+            $testProps = ($test->newInstance())->props;
+            
+            if ($testProps == $props){
+                $this->request->isDebug = true;
+                return;
+            }
+        }
+
+
+        $tests = $method->getAttributes(Tests::class);
+        foreach ($tests as $test) {
+            $propsList = ($test->newInstance())->tests;
+
+            $testResult = [];
+
+            foreach ($propsList as $testProps) {
+                if ($testProps == $props){
+                    $this->request->isDebug = true;
+                    return;
+                }
+            }
+        }
     }
 }

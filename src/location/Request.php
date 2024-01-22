@@ -1,12 +1,12 @@
 <?php
 
-namespace markapi\tools;
+namespace markapi\location;
 
 class Request
 {
     public string $task;
     public array  $props;
-    public string $mode;
+    public bool $isDebug = false;
 
     function setPrefix(string $prefix = 'api')
     {
