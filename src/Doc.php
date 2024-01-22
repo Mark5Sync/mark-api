@@ -36,6 +36,30 @@ abstract class Doc
     }
 
 
+    private function getInputType($title, $name, $canToBeNull)
+    {
+        $result = null;
+        switch ($name) {
+            case 'int':
+            case 'float':
+                $result = 1;
+
+                break;
+            case 'string':
+                $result = 'string';
+                break;
+
+            default:
+                $result = 'undefined';
+        }
+
+        if ($canToBeNull)
+            return new Join($title, [null, $result]);
+
+        return $result;
+    }
+
+
     protected function __DOC__()
     {
         $this->request->isDebug = true;
@@ -57,7 +81,7 @@ abstract class Doc
                 if (!$type)
                     $type = 'null';
                 else if ($type instanceof \ReflectionNamedType)
-                    $type = ($parameter->allowsNull() ? '?' : '') . $type->getName();
+                    $type = $this->getInputType($typeName, $type->getName(), $parameter->allowsNull()); // ($parameter->allowsNull() ? new Join($typeName, [null, $type->getName()]) : $type->getName());
                 else if ($type instanceof \ReflectionUnionType)
                     $type = array_map(fn ($tp) => "$tp", $type->getTypes());
 
