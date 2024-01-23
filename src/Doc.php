@@ -138,6 +138,9 @@ abstract class Doc
 
     protected function checkMode(string $methodName, $props)
     {
+        if (empty($props))
+            return;
+
         $method = new ReflectionMethod($this, $methodName);
 
 
