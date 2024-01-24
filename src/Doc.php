@@ -15,9 +15,10 @@ abstract class Doc
 {
     use location;
 
-    private function ownMethods()
+    protected $modules = [];
+
+    private function ownMethods(ReflectionClass $reflectionClass)
     {
-        $reflectionClass = new ReflectionClass($this);
         $classMethods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
         $inheritedMethods = [];
@@ -60,14 +61,11 @@ abstract class Doc
     }
 
 
-    protected function __DOC__()
-    {
-        $this->request->isDebug = true;
-        $reflectionClass = new ReflectionClass($this);
 
-        $resultOutput = [];
-        $resultMethods = [];
-        $methods = $this->ownMethods();
+    private function useMethotsFrom(Api | Route $source, &$resultOutput, &$resultMethods){
+        $reflectionClass = new ReflectionClass($source);
+        $methods = $this->ownMethods($reflectionClass);
+
         foreach ($methods as $method) {
             $methodName = $method->getName();
             $resultMethods[$methodName] = [];
@@ -127,7 +125,21 @@ abstract class Doc
                 $resultMethods[$methodName]['output'] = true;
             }
         }
+    }
 
+
+    protected function __DOC__()
+    {
+        $this->request->isDebug = true;
+
+        $resultOutput = [];
+        $resultMethods = [];
+
+
+        foreach ([$this, ...(array)$this->modules] as $module) {
+            $this->useMethotsFrom($module, $resultOutput, $resultMethods);
+        }
+        
 
         return [
             'methods' => $resultMethods,
