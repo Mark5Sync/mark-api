@@ -3,8 +3,8 @@
 namespace markapi;
 
 use markapi\_markers\doc_clients;
+use markapi\_markers\exec;
 use markapi\_markers\location;
-use markapi\_types\Join;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
 use markdi\NotMark;
@@ -16,21 +16,23 @@ abstract class Doc
 {
     use location;
     use doc_clients;
+    use exec;
 
     protected $modules = [];
 
-    protected function modules(): array {
+    protected function modules(): array
+    {
         return [];
     }
 
-    private function ownMethods($module)
+    private function ownMethods($reflectionModule)
     {
-        $reflectionClass = new ReflectionClass($module);
-        $classMethods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
+        $classMethods = $reflectionModule->getMethods(ReflectionMethod::IS_PUBLIC);
+        $classMethods = $this->methodHasTest($classMethods);
 
         $inheritedMethods = [];
-        if ($reflectionClass->getParentClass()) {
-            $inheritedMethods = $reflectionClass->getParentClass()->getMethods();
+        if ($reflectionModule->getParentClass()) {
+            $inheritedMethods = $reflectionModule->getParentClass()->getMethods();
             $inheritedMethods = array_map(function ($method) {
                 return $method->getName();
             }, $inheritedMethods);
@@ -47,17 +49,36 @@ abstract class Doc
 
 
 
-    protected function iterateModules($getOwnMethods = false)
+    private function methodHasTest(array $refMethods)
+    {
+        $filter = array_filter($refMethods, function ($method) {
+            if (!empty($method->getAttributes(Test::class)))
+                return true;
+
+            if (!empty($method->getAttributes(Tests::class)))
+                return true;
+        });
+        return $filter;
+    }
+
+
+
+
+
+    protected function iterateModules($useReflection = false)
     {
         foreach ([$this, ...$this->modules] as $module) {
-            yield $module => $getOwnMethods
-                ? $this->ownMethods($module)
-                : [];
+            if (!$useReflection)
+                yield $module => [];
+
+            $reflectionModule = new ReflectionClass($module);
+            yield $module => $this->ownMethods($reflectionModule);
         }
     }
 
 
-    protected function __DOC__()
+
+    public function __DOC__()
     {
         $this->request->isDebug = true;
 
@@ -65,11 +86,11 @@ abstract class Doc
         $resultMethods = [];
 
 
-        foreach ($this->iterateModules(true) as $module => $methods) {
-            $reflectionClass = new ReflectionClass($module);
+        foreach ($this->iterateModules(true) as $refModule => $refMethods) {
+            
 
-            foreach ($methods as $method) {
-                $tests = $this->typescriptClient()->analysis($reflectionClass, $method);
+            foreach ($refMethods as $refMethod) {
+                $tests = $this->typescriptClient()->analysis($refMethod);
                 if ($tests->pass)
                     continue;
 

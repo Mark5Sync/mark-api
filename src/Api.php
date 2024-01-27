@@ -49,7 +49,7 @@ abstract class Api extends Doc
                 continue;
 
             try {
-                return $this->runWithCorrectionPropsType($module, $taskName, $props);
+                return $this->executor->runWithCorrectionPropsType($module, $taskName, $props);
                 // return  (is_string($module) ? new $module: $module)->{$taskName}(...$props);
             } catch (\ArgumentCountError $th) {
                 throw new \Exception("Задача ожидает другого количества аргументов", 888);
@@ -59,43 +59,6 @@ abstract class Api extends Doc
         throw new \Exception("task is Undefined [$taskName]", 1);
     }
 
-
-    private function runWithCorrectionPropsType($module, $method, $props)
-    {
-        $reflection = new ReflectionMethod($module, $method);
-        $correctionProps = [];
-        foreach ($reflection->getParameters() as $parameter) {
-            $info = $parameter->getType();
-            $type = $info->getName();
-            $key = $parameter->name;
-            $bNull = $parameter->allowsNull();
-
-            if (!isset($props[$key])) {
-                if (!$bNull)
-                    throw new \Exception("$key not found", 1);
-
-                $correctionProps[$key] = null;
-                continue;
-            }
-
-
-            switch ($type) {
-                case 'int':
-                    $correctionProps[$key] = (int)$props[$key];
-                    break;
-                case 'float':
-                    $correctionProps[$key] = (float)$props[$key];
-                    break;
-                case 'bool':
-                    $correctionProps[$key] = (bool)$props[$key];
-                    break;
-                default:
-                    $correctionProps[$key] = $props[$key];
-
-            }
-        }
-        return (is_string($module) ? new $module: $module)->{$method}(...$correctionProps);
-    }
 
 
     private function existsMethodInModule($module, $method)

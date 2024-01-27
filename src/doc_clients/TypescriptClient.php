@@ -2,6 +2,7 @@
 
 namespace markapi\doc_clients;
 
+use markapi\_markers\exec;
 use markapi\_markers\location;
 use markapi\_types\Join;
 use markapi\DEV\Test;
@@ -12,30 +13,36 @@ use markdi\MarkInstance;
 class TypescriptClient
 {
     use location;
+    use exec;
 
-    private $reflectionClass;
-    private $method;
+    private $refMethod;
+    public $methodName;
     private $typeName;
+    private $module;
 
     public $argsExists = [];
 
-    public $methodName;
     public $output;
     public $pass = true;
 
-    function analysis($reflectionClass, $method)
+
+
+    function analysis($module, $refMethod)
     {
-        $this->methodName = $method->getName();
+        $this->module = $module;
+        $this->refMethod = $refMethod;
+        $this->methodName = $refMethod->getName();
         $resultMethods[$this->methodName] = [];
         $this->typeName = ucwords($this->methodName);
 
-
-        $this->checkInput($reflectionClass, $method);
-        $this->runTest($method);
-        $this->tunTests($method);
+        $this->checkInput();
+        $this->runTest();
+        $this->tunTests();
 
         return $this;
     }
+
+
 
     private function getInputType($title, $name, $canToBeNull)
     {
@@ -60,11 +67,11 @@ class TypescriptClient
         return $result;
     }
 
-    function checkInput($reflectionClass, $methodName)
-    {
-        $reflectionMethod = $reflectionClass->getMethod($methodName);
 
-        foreach ($reflectionMethod->getParameters() as $parameter) {
+
+    private function checkInput()
+    {
+        foreach ($this->refMethod->getParameters() as $parameter) {
             $type = $parameter->getType();
 
             if (!$type)
@@ -83,16 +90,17 @@ class TypescriptClient
 
 
 
-    private function runTest($methodName)
+    private function runTest()
     {
-        $tests = $this->method->getAttributes(Test::class);
+        $tests = $this->refMethod->getAttributes(Test::class);
         foreach ($tests as $test) {
             $this->pass = false;
             $this->request->debugClear();
             $props = ($test->newInstance())->props;
 
             try {
-                $result = $this->{$methodName}(...(array)$props);
+                $result = $this->{$this->methodName}(...(array)$props);
+                // $result = $this->executor->runWithCorrectionPropsType($this, $refMethod, (array)$props);
             } catch (\Throwable $th) {
                 $result = null; //new Join($typeName, ['Error' => $th->getMessage()]);
             }
@@ -103,9 +111,14 @@ class TypescriptClient
     }
 
 
-    private function tunTests($methodName)
+
+
+
+
+
+    private function tunTests()
     {
-        $tests = $this->method->getAttributes(Tests::class);
+        $tests = $this->refMethod->getAttributes(Tests::class);
         foreach ($tests as $test) {
             $this->pass = false;
             $propsList = ($test->newInstance())->tests;
@@ -116,7 +129,7 @@ class TypescriptClient
                 $this->request->debugClear();
                 $props = is_array($props) ? $props : [$props];
                 try {
-                    $testResult[] = $this->{$methodName}(...$props);
+                    $testResult[] = $this->{$this->methodName}(...$props);
                 } catch (\Throwable $th) {
                     $testResult[] = null; //new Join($typeName, ['Error' => $th->getMessage()]);
                 }
