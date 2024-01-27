@@ -86,11 +86,11 @@ abstract class Doc
         $resultMethods = [];
 
 
-        foreach ($this->iterateModules(true) as $refModule => $refMethods) {
+        foreach ($this->iterateModules(true) as $module => $refMethods) {
             
 
             foreach ($refMethods as $refMethod) {
-                $tests = $this->typescriptClient()->analysis($refMethod);
+                $tests = $this->typescriptClient()->analysis($module, $refMethod);
                 if ($tests->pass)
                     continue;
 

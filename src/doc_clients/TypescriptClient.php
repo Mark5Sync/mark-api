@@ -99,7 +99,7 @@ class TypescriptClient
             $props = ($test->newInstance())->props;
 
             try {
-                $result = $this->{$this->methodName}(...(array)$props);
+                $result = $this->module->{$this->methodName}(...(array)$props);
                 // $result = $this->executor->runWithCorrectionPropsType($this, $refMethod, (array)$props);
             } catch (\Throwable $th) {
                 $result = null; //new Join($typeName, ['Error' => $th->getMessage()]);
@@ -129,7 +129,7 @@ class TypescriptClient
                 $this->request->debugClear();
                 $props = is_array($props) ? $props : [$props];
                 try {
-                    $testResult[] = $this->{$this->methodName}(...$props);
+                    $testResult[] = $this->module->{$this->methodName}(...$props);
                 } catch (\Throwable $th) {
                     $testResult[] = null; //new Join($typeName, ['Error' => $th->getMessage()]);
                 }
