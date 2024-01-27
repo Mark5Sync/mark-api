@@ -2,6 +2,7 @@
 
 namespace markapi;
 
+use markapi\_markers\doc_clients;
 use markapi\_markers\location;
 use markapi\_types\Join;
 use markapi\DEV\Test;
@@ -14,11 +15,17 @@ use ReflectionMethod;
 abstract class Doc
 {
     use location;
+    use doc_clients;
 
     protected $modules = [];
 
-    private function ownMethods(ReflectionClass $reflectionClass)
+    protected function modules(): array {
+        return [];
+    }
+
+    private function ownMethods($module)
     {
+        $reflectionClass = new ReflectionClass($module);
         $classMethods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
         $inheritedMethods = [];
@@ -37,93 +44,15 @@ abstract class Doc
     }
 
 
-    private function getInputType($title, $name, $canToBeNull)
+
+
+
+    protected function iterateModules($getOwnMethods = false)
     {
-        $result = null;
-        switch ($name) {
-            case 'int':
-            case 'float':
-                $result = 1;
-
-                break;
-            case 'string':
-                $result = 'string';
-                break;
-
-            default:
-                $result = 'undefined';
-        }
-
-        if ($canToBeNull)
-            return new Join($title, [null, $result]);
-
-        return $result;
-    }
-
-
-
-    private function useMethotsFrom(Api | Route $source, &$resultOutput, &$resultMethods){
-        $reflectionClass = new ReflectionClass($source);
-        $methods = $this->ownMethods($reflectionClass);
-
-        foreach ($methods as $method) {
-            $methodName = $method->getName();
-            $resultMethods[$methodName] = [];
-            $typeName = ucwords($methodName);
-            $reflectionMethod = $reflectionClass->getMethod($methodName);
-
-
-            foreach ($reflectionMethod->getParameters() as $parameter) {
-                $type = $parameter->getType();
-
-                if (!$type)
-                    $type = 'null';
-                else if ($type instanceof \ReflectionNamedType)
-                    $type = $this->getInputType($typeName, $type->getName(), $parameter->allowsNull()); // ($parameter->allowsNull() ? new Join($typeName, [null, $type->getName()]) : $type->getName());
-                else if ($type instanceof \ReflectionUnionType)
-                    $type = array_map(fn ($tp) => "$tp", $type->getTypes());
-
-
-                $resultOutput["{$typeName}Input"][$parameter->getName()] = $type;
-                $resultMethods[$methodName]['input'] = true;
-            }
-
-
-            $tests = $method->getAttributes(Test::class);
-            foreach ($tests as $test) {
-                $this->request->debugClear();
-                $props = ($test->newInstance())->props;
-
-                try {
-                    $result = $this->{$methodName}(...(array)$props);
-                } catch (\Throwable $th) {
-                    $result = null; //new Join($typeName, ['Error' => $th->getMessage()]);
-                }
-
-                $resultOutput["{$typeName}Output"] = $result;
-                $resultMethods[$methodName]['output'] = true;
-            }
-
-
-            $tests = $method->getAttributes(Tests::class);
-            foreach ($tests as $test) {
-                $propsList = ($test->newInstance())->tests;
-
-                $testResult = [];
-
-                foreach ($propsList as $props) {
-                    $this->request->debugClear();
-                    $props = is_array($props) ? $props : [$props];
-                    try {
-                        $testResult[] = $this->{$methodName}(...$props);
-                    } catch (\Throwable $th) {
-                        $testResult[] = null; //new Join($typeName, ['Error' => $th->getMessage()]);
-                    }
-                }
-
-                $resultOutput["{$typeName}Output"] = new Join($typeName, $testResult);
-                $resultMethods[$methodName]['output'] = true;
-            }
+        foreach ([$this, ...$this->modules] as $module) {
+            yield $module => $getOwnMethods
+                ? $this->ownMethods($module)
+                : [];
         }
     }
 
@@ -136,10 +65,19 @@ abstract class Doc
         $resultMethods = [];
 
 
-        foreach ([$this, ...(array)$this->modules] as $module) {
-            $this->useMethotsFrom($module, $resultOutput, $resultMethods);
+        foreach ($this->iterateModules(true) as $module => $methods) {
+            $reflectionClass = new ReflectionClass($module);
+
+            foreach ($methods as $method) {
+                $tests = $this->typescriptClient()->analysis($reflectionClass, $method);
+                if ($tests->pass)
+                    continue;
+
+                $resultOutput = [...$resultOutput, ...$tests->output];
+                $resultMethods[$tests->methodName] = $tests->argsExists;
+            }
         }
-        
+
 
         return [
             'methods' => $resultMethods,
