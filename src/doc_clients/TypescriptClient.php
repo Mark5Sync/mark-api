@@ -106,7 +106,7 @@ class TypescriptClient
             }
 
             $this->output["{$this->typeName}Output"] = $result;
-            $argsExists['output'] = true;
+            $this->argsExists['output'] = true;
         }
     }
 
