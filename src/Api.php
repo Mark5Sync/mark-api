@@ -37,6 +37,9 @@ abstract class Api extends Doc
         if ($this->redirect->to)
             $result['redirect'] = $this->redirect->to;
 
+        if (!empty($this->request->exceptions))
+            $result['exceptions'] = $this->request->exceptions;
+
         exit(json_encode($result));
     }
 

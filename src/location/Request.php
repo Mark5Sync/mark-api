@@ -9,6 +9,8 @@ class Request
     public bool $isDebug = false;
     public array $debugProps = [];
 
+    public array $exceptions = [];
+
     function setPrefix(string $prefix = 'api')
     {
         $request_uri = $_SERVER['REQUEST_URI'];
@@ -49,5 +51,14 @@ class Request
             return null;
 
         return $this->debugProps[$key];
+    }
+
+
+
+    function exception(\Throwable $exception){
+        $this->exceptions[] = [
+            'message' => $exception->getMessage(),
+            'file' => $exception->getFile() . ':' . $exception->getLine(),
+        ];
     }
 }

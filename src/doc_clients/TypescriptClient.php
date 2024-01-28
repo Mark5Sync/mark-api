@@ -29,7 +29,7 @@ class TypescriptClient
 
     function analysis($module, $refMethod)
     {
-        $this->module = $module;
+        $this->module = is_string($module) ? new $module : $module;
         $this->refMethod = $refMethod;
         $this->methodName = $refMethod->getName();
         $resultMethods[$this->methodName] = [];
@@ -55,6 +55,9 @@ class TypescriptClient
                 break;
             case 'string':
                 $result = 'string';
+                break;
+            case 'array':
+                $result = [];
                 break;
 
             default:
@@ -102,6 +105,7 @@ class TypescriptClient
                 $result = $this->module->{$this->methodName}(...(array)$props);
                 // $result = $this->executor->runWithCorrectionPropsType($this, $refMethod, (array)$props);
             } catch (\Throwable $th) {
+                $this->catchTestMessage($this->methodName, var_export($props, true), $th->getMessage());
                 $result = null; //new Join($typeName, ['Error' => $th->getMessage()]);
             }
 
@@ -131,6 +135,7 @@ class TypescriptClient
                 try {
                     $testResult[] = $this->module->{$this->methodName}(...$props);
                 } catch (\Throwable $th) {
+                    $this->catchTestMessage($this->methodName, var_export($props, true), $th->getMessage());
                     $testResult[] = null; //new Join($typeName, ['Error' => $th->getMessage()]);
                 }
             }
@@ -138,5 +143,16 @@ class TypescriptClient
             $this->output["{$this->typeName}Output"] = new Join($this->typeName, $testResult);
             $this->argsExists['output'] = true;
         }
+    }
+
+
+
+    private function catchTestMessage($method, $props, $message)
+    {
+        $message = <<<ERROR
+        tunTests:
+        {$method}({$props}) // {$message}
+        ERROR;
+        $this->request->exception(new \Exception(str_replace("\n", "", $message), 999));
     }
 }
