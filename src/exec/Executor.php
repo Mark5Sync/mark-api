@@ -4,13 +4,16 @@ namespace markapi\exec;
 
 class Executor {
 
-    function runWithCorrectionPropsType($module, $method, $props)
-    {
-        $reflection = new \ReflectionMethod($module, $method);
-        $correctionProps = [];
-        foreach ($reflection->getParameters() as $parameter) {
+    private function convertProps($reflectionMethod, $props){
+        $result = [];
+        foreach ($reflectionMethod->getParameters() as $parameter) {
+            if ($parameter->isVariadic()){
+                return $props;
+            }
+
             $info = $parameter->getType();
             $type = $info->getName();
+
             $key = $parameter->name;
             $bNull = $parameter->allowsNull();
 
@@ -18,26 +21,32 @@ class Executor {
                 if (!$bNull)
                     throw new \Exception("$key not found", 1);
 
-                $correctionProps[$key] = null;
+                $result[$key] = null;
                 continue;
             }
 
 
             switch ($type) {
                 case 'int':
-                    $correctionProps[$key] = (int)$props[$key];
+                    $result[$key] = (int)$props[$key];
                     break;
                 case 'float':
-                    $correctionProps[$key] = (float)$props[$key];
+                    $result[$key] = (float)$props[$key];
                     break;
                 case 'bool':
-                    $correctionProps[$key] = (bool)$props[$key];
+                    $result[$key] = (bool)$props[$key];
                     break;
                 default:
-                    $correctionProps[$key] = $props[$key];
-
+                    $result[$key] = $props[$key];
             }
         }
+
+        return $result;
+    }
+
+    function runWithCorrectionPropsType($module, $method, $props)
+    {
+        $correctionProps = $this->convertProps(new \ReflectionMethod($module, $method), $props);
         return (is_string($module) ? new $module: $module)->{$method}(...$correctionProps);
     }
 
