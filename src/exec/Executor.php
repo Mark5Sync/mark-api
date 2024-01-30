@@ -2,19 +2,26 @@
 
 namespace markapi\exec;
 
-class Executor {
+class Executor
+{
 
-    private function convertProps($reflectionMethod, $props){
+    private function convertProps($reflectionMethod, $props)
+    {
         $result = [];
         foreach ($reflectionMethod->getParameters() as $parameter) {
-            if ($parameter->isVariadic()){
+            $key = $parameter->name;
+
+            if ($parameter->isVariadic())
                 return $props;
-            }
+
 
             $info = $parameter->getType();
-            $type = $info->getName();
+            if (!$info) {
+                $result[$key] = $props[$key];
+                continue;
+            }
 
-            $key = $parameter->name;
+            $type = $info->getName();
             $bNull = $parameter->allowsNull();
 
             if (!isset($props[$key])) {
@@ -47,7 +54,6 @@ class Executor {
     function runWithCorrectionPropsType($module, $method, $props)
     {
         $correctionProps = $this->convertProps(new \ReflectionMethod($module, $method), $props);
-        return (is_string($module) ? new $module: $module)->{$method}(...$correctionProps);
+        return (is_string($module) ? new $module : $module)->{$method}(...$correctionProps);
     }
-
 }

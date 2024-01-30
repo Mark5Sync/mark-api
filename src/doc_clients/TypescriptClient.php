@@ -61,7 +61,7 @@ class TypescriptClient
                 break;
 
             default:
-                $result = 'undefined';
+                $result = 'avy';
         }
 
         if ($canToBeNull)
