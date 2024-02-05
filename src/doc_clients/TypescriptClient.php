@@ -60,6 +60,10 @@ class TypescriptClient
                 $result = [];
                 break;
 
+            case 'bool':
+                $result = true;
+                break;
+
             default:
                 $result = 'avy';
         }

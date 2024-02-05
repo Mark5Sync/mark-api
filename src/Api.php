@@ -3,8 +3,6 @@
 namespace markapi;
 
 use markapi\_markers\location;
-use ReflectionClass;
-use ReflectionMethod;
 
 abstract class Api extends Doc
 {
@@ -22,16 +20,15 @@ abstract class Api extends Doc
         $this->request->setPrefix($this->prefix);
 
         $task = $this->request->task;
-        $props = $this->request->props;
-
 
         try {
-            $result['data'] = $this->applytask($task, $props);
+            $result['data'] = $this->applytask($task);
         } catch (\Throwable $th) {
             $result['error'] = [
                 'message' => $th->getMessage(),
                 'code' => $th->getCode(),
             ];
+            $this->onError($th);
         }
 
         if ($this->redirect->to)
@@ -44,29 +41,32 @@ abstract class Api extends Doc
     }
 
 
-
-    private function applyTask(string $taskName, $props)
+    protected function onInit(string $task)
     {
-        foreach ($this->iterateModules() as $module => $_) {
-            if (!$this->existsMethodInModule($module, $taskName))
-                continue;
+    }
 
-            try {
-                return $this->executor->runWithCorrectionPropsType($module, $taskName, $props);
-                // return  (is_string($module) ? new $module: $module)->{$taskName}(...$props);
-            } catch (\ArgumentCountError $th) {
-                throw new \Exception("Задача ожидает другого количества аргументов", 888);
-            }
-        }
 
-        throw new \Exception("task is Undefined [$taskName]", 1);
+    protected function onError(\Throwable $exception)
+    {
     }
 
 
 
-    private function existsMethodInModule($module, $method)
+    private function run(string $task, array $props){
+        $this->onInit($task);
+        return $this->{$task}(...$props);
+    }
+
+
+    private function applyTask(string $task)
     {
-        $reflection = new ReflectionClass($module);
-        return $reflection->hasMethod($method);
+        try {
+            if (method_exists($this, $task))
+                return $this->run($task, $this->request->getParamsFor($this, $task));
+        } catch (\ArgumentCountError $th) {
+            throw new \Exception("Задача [$task] ожидает другого количества аргументов", 888);
+        }
+
+        throw new \Exception("[$task] - не определена", 1);
     }
 }
