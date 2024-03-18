@@ -1,13 +1,13 @@
 <?php
 namespace markapi\_markers;
-use markdi\markdi;
 use markapi\doc_clients\TypescriptClient;
+use marksync\provider\provider;
 
 /**
 
 */
 trait doc_clients {
-    use markdi;
+    use provider;
 
    function typescriptClient(): TypescriptClient { return new TypescriptClient; }
 

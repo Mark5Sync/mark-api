@@ -7,7 +7,7 @@ use markapi\_markers\exec;
 use markapi\_markers\location;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
-use markdi\NotMark;
+use marksync\provider\NotMark;
 use ReflectionClass;
 use ReflectionMethod;
 

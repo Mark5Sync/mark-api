@@ -7,7 +7,7 @@ use markapi\_markers\location;
 use markapi\_types\Join;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
-use markdi\MarkInstance;
+use marksync\provider\MarkInstance;
 
 #[MarkInstance]
 class TypescriptClient

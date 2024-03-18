@@ -4,7 +4,7 @@
 namespace markapi\DEV;
 
 use Attribute;
-use markdi\NotMark;
+use marksync\provider\NotMark;
 
 #[NotMark]
 #[Attribute]

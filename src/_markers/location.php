@@ -1,6 +1,7 @@
 <?php
 namespace markapi\_markers;
-use markdi\markdi;
+
+use marksync\provider\provider;
 use markapi\location\Request;
 use markapi\location\Redirect;
 
@@ -10,7 +11,7 @@ use markapi\location\Redirect;
 
 */
 trait location {
-    use markdi;
+    use provider;
 
    function request(): Request { return new Request; }
    function redirect(): Redirect { return new Redirect; }

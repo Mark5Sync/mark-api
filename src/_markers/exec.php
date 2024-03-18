@@ -1,14 +1,14 @@
 <?php
 namespace markapi\_markers;
-use markdi\markdi;
 use markapi\exec\Executor;
+use marksync\provider\provider;
 
 /**
  * @property-read Executor $executor
 
 */
 trait exec {
-    use markdi;
+    use provider;
 
    function executor(): Executor { return new Executor; }
 
