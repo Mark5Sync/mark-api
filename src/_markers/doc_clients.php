@@ -1,7 +1,7 @@
 <?php
 namespace markapi\_markers;
-use markapi\doc_clients\TypescriptClient;
 use marksync\provider\provider;
+use markapi\doc_clients\TypescriptClient;
 
 /**
 

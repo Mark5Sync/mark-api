@@ -82,6 +82,12 @@ abstract class Api extends Doc
 
     protected function onResult($result)
     {
+        if ($this->pagination->use)
+            return [
+                'content' => $result,
+                'pagination' => $this->pagination,
+            ];
+
         return $result;
     }
 
@@ -97,7 +103,7 @@ abstract class Api extends Doc
     private function applyTask(string $task)
     {
         try {
-            if (method_exists($this, $task)){
+            if (method_exists($this, $task)) {
                 $result = $this->run($task, $this->request->getParamsFor($this, $task));
                 return $this->request->isDebug ? $result : $this->onResult($result);
             }
