@@ -77,6 +77,11 @@ abstract class Doc
     }
 
 
+    protected function onResult($result)
+    {
+        return $result;
+    }
+
 
     public function __DOC__()
     {
@@ -90,7 +95,7 @@ abstract class Doc
             
 
             foreach ($refMethods as $refMethod) {
-                $tests = $this->typescriptClient()->analysis($module, $refMethod);
+                $tests = $this->typescriptClient()->analysis($module, $refMethod, function($result){ return $this->onResult($result); });
                 if ($tests->pass)
                     continue;
 

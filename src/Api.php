@@ -80,10 +80,16 @@ abstract class Api extends Doc
     }
 
 
+    protected function onResult($result)
+    {
+        return $result;
+    }
+
 
     private function run(string $task, array $props)
     {
         $this->onInit($task);
+
         return $this->{$task}(...$props);
     }
 
@@ -91,8 +97,10 @@ abstract class Api extends Doc
     private function applyTask(string $task)
     {
         try {
-            if (method_exists($this, $task))
-                return $this->run($task, $this->request->getParamsFor($this, $task));
+            if (method_exists($this, $task)){
+                $result = $this->run($task, $this->request->getParamsFor($this, $task));
+                return $this->request->isDebug ? $result : $this->onResult($result);
+            }
         } catch (\ArgumentCountError $th) {
             throw new \Exception("Задача [$task] ожидает другого количества аргументов", 888);
         }

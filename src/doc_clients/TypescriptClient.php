@@ -19,6 +19,8 @@ class TypescriptClient
     public $methodName;
     private $typeName;
     private $module;
+    
+    private $onResult;
 
     public $argsExists = [];
 
@@ -27,13 +29,15 @@ class TypescriptClient
 
 
 
-    function analysis($module, $refMethod)
+    function analysis($module, $refMethod, $onResult)
     {
         $this->module = is_string($module) ? new $module : $module;
         $this->refMethod = $refMethod;
         $this->methodName = $refMethod->getName();
         $resultMethods[$this->methodName] = [];
         $this->typeName = ucwords($this->methodName);
+
+        $this->onResult = $onResult;
 
         $this->checkInput();
         $this->runTest();
@@ -106,7 +110,7 @@ class TypescriptClient
             $props = ($test->newInstance())->props;
 
             try {
-                $result = $this->module->{$this->methodName}(...(array)$props);
+                $result = $this->wrapResult($this->module->{$this->methodName}(...(array)$props));
                 // $result = $this->executor->runWithCorrectionPropsType($this, $refMethod, (array)$props);
             } catch (\Throwable $th) {
                 $this->catchTestMessage($this->methodName, var_export($props, true), $th->getMessage());
@@ -120,7 +124,10 @@ class TypescriptClient
 
 
 
-
+    private function wrapResult($result){
+        $onResult = $this->onResult;
+        return $onResult($result);
+    }
 
 
 
@@ -137,7 +144,7 @@ class TypescriptClient
                 $this->request->debugClear();
                 $props = is_array($props) ? $props : [$props];
                 try {
-                    $testResult[] = $this->module->{$this->methodName}(...$props);
+                    $testResult[] = $this->wrapResult($this->module->{$this->methodName}(...$props));
                 } catch (\Throwable $th) {
                     $this->catchTestMessage($this->methodName, var_export($props, true), $th->getMessage());
                     $testResult[] = null; //new Join($typeName, ['Error' => $th->getMessage()]);
