@@ -9,7 +9,7 @@ class Pagination implements JsonSerializable
 
     public $page = 1;
     public $size = 10;
-    public $pages = 1;
+    public $pages = null;
     public $use = false;
 
 
