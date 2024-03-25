@@ -1,6 +1,6 @@
 <?php
 
-namespace markapi\location\pagination;
+namespace markapi\location;
 
 use JsonSerializable;
 

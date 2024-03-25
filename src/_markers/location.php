@@ -1,7 +1,7 @@
 <?php
 namespace markapi\_markers;
 use marksync\provider\provider;
-use markapi\location\pagination\Pagination;
+use markapi\location\Pagination;
 use markapi\location\Redirect;
 use markapi\location\Request;
 
