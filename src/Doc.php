@@ -25,6 +25,7 @@ abstract class Doc
         return [];
     }
 
+
     private function ownMethods($reflectionModule)
     {
         $classMethods = $reflectionModule->getMethods(ReflectionMethod::IS_PUBLIC);
@@ -58,6 +59,7 @@ abstract class Doc
             if (!empty($method->getAttributes(Tests::class)))
                 return true;
         });
+
         return $filter;
     }
 
@@ -92,10 +94,12 @@ abstract class Doc
 
 
         foreach ($this->iterateModules(true) as $module => $refMethods) {
-            
 
             foreach ($refMethods as $refMethod) {
-                $tests = $this->typescriptClient()->analysis($module, $refMethod, function($result){ return $this->onResult($result); });
+                $tests = $this->typescriptClient()->analysis($module, $refMethod, function ($result) {
+                    return $this->onResult($result);
+                });
+
                 if ($tests->pass)
                     continue;
 
@@ -105,10 +109,36 @@ abstract class Doc
         }
 
 
+
+
+
+
         return [
             'methods' => $resultMethods,
             'types' => $resultOutput,
+            'module' => $this->getTraitsMethods(array_keys($resultMethods)),
         ];
+    }
+
+
+    private function getTraitsMethods($methods)
+    {
+        $classReflection = new ReflectionClass($this);
+        $traits = $classReflection->getTraits();
+
+        $result = [];
+
+        foreach ($traits as $trait) {
+            foreach ($methods as $method) {
+                if ($trait->hasMethod($method)) {
+                    $fileName = end(explode('\\',$trait->name));
+                    $result[$method] = $fileName;
+                }
+            }
+        }
+
+
+        return $result;
     }
 
 
