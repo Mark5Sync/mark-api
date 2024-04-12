@@ -112,10 +112,11 @@ class Request
 
 
 
-    function exception(\Throwable $exception){
+    function exception(\Throwable $exception, string $method){
         $this->exceptions[] = [
             'message' => $exception->getMessage(),
             'file' => $exception->getFile() . ':' . $exception->getLine(),
+            'task' => $method,
         ];
     }
 }

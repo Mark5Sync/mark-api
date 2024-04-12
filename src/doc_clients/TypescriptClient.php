@@ -169,6 +169,6 @@ class TypescriptClient
         tunTests:
         {$method}({$props}) // {$message}
         ERROR;
-        $this->request->exception(new \Exception(str_replace("\n", "", $message), 999));
+        $this->request->exception(new \Exception(str_replace("\n", "", $message), 999), $method);
     }
 }
