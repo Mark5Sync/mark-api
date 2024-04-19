@@ -91,6 +91,7 @@ abstract class Doc
 
         $resultOutput = [];
         $resultMethods = [];
+        $times = [];
 
 
         foreach ($this->iterateModules(true) as $module => $refMethods) {
@@ -105,9 +106,9 @@ abstract class Doc
 
                 $resultOutput = [...$resultOutput, ...$tests->output];
                 $resultMethods[$tests->methodName] = $tests->argsExists;
+                $times[$tests->methodName] = $tests->time;
             }
         }
-
 
 
 
@@ -117,6 +118,7 @@ abstract class Doc
             'methods' => $resultMethods,
             'types' => $resultOutput,
             'module' => $this->getTraitsMethods(array_keys($resultMethods)),
+            'times' => $times,
         ];
     }
 

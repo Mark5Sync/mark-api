@@ -26,6 +26,7 @@ class TypescriptClient
 
     public $output;
     public $pass = true;
+    public $time = 0;
 
 
 
@@ -40,8 +41,11 @@ class TypescriptClient
         $this->onResult = $onResult;
 
         $this->checkInput();
-        $this->runTest();
-        $this->tunTests();
+
+        $time = microtime();
+            $this->runTest();
+            $this->tunTests();
+        $this->time = microtime() - $time;
 
         return $this;
     }
