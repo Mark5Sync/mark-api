@@ -42,10 +42,10 @@ class TypescriptClient
 
         $this->checkInput();
 
-        $time = microtime();
+        $time = microtime(true);
             $this->runTest();
             $this->tunTests();
-        $this->time = microtime() - $time;
+        $this->time = microtime(true) - $time;
 
         return $this;
     }
