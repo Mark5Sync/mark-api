@@ -80,6 +80,10 @@ abstract class Api extends Doc
     }
 
 
+
+
+
+
     protected function onResult($result)
     {
         if ($this->pagination->use)

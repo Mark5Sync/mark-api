@@ -21,11 +21,13 @@ class Request
         $request_uri = $_SERVER['REQUEST_URI'];
         $pattern = "/\/$prefix\/([\w_]+)?\??/";
 
+        $param_value = 'index';
+
         if (preg_match($pattern, $request_uri, $matches)) {
             $param_value = isset($matches[1]) ? $matches[1] : null;
         }
         
-        $this->task = $param_value ? $param_value : 'index';
+        $this->task = $param_value;
         $post = file_get_contents('php://input');
         if ($post)
             $this->post = json_decode($post, true);

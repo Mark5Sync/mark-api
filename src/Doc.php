@@ -84,10 +84,20 @@ abstract class Doc
         return $result;
     }
 
+    protected function TOKEN(string $token)
+    {
+        return true;
+    }
 
-    public function __DOC__()
+
+
+    public function __DOC__(string $token = 'no-token')
     {
         $this->request->isDebug = true;
+
+        if (!$this->TOKEN($token))
+            throw new \Exception("Invalid token", 3);
+
 
         $resultOutput = [];
         $resultMethods = [];
@@ -133,7 +143,7 @@ abstract class Doc
         foreach ($traits as $trait) {
             foreach ($methods as $method) {
                 if ($trait->hasMethod($method)) {
-                    $fileName = end(explode('\\',$trait->name));
+                    $fileName = end(explode('\\', $trait->name));
                     $result[$method] = $fileName;
                 }
             }
