@@ -35,6 +35,8 @@ class TypescriptClient
         $this->module = is_string($module) ? new $module : $module;
         $this->refMethod = $refMethod;
         $this->methodName = $refMethod->getName();
+        $this->tags->key = $this->methodName;
+        
         $resultMethods[$this->methodName] = [];
         $this->typeName = ucwords($this->methodName);
 

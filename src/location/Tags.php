@@ -9,12 +9,13 @@ class Tags
 {
     use location;
 
+    public  $key = 'index';
     private $list = [];
 
     function add(...$tags)
     {
         foreach ($tags as $tag) {
-            $this->list[$this->request->task][$tag] = true;
+            $this->list[$this->key][$tag] = true;
         }
     }
 
