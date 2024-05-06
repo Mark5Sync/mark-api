@@ -106,6 +106,9 @@ abstract class Api extends Doc
 
     private function applyTask(string $task)
     {
+        if (!in_array($task, ['__doc__', '_']))
+            $task = trim($task, '_');
+
         try {
             if (method_exists($this, $task)) {
                 $result = $this->run($task, $this->request->getParamsFor($this, $task));
@@ -116,5 +119,15 @@ abstract class Api extends Doc
         }
 
         throw new \Exception("[$task] - не определена", 1);
+    }
+
+
+
+
+    function _($props){
+
+        die(json_encode(['_' => 'me']));
+
+        return 'merge';
     }
 }

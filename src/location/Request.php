@@ -24,7 +24,8 @@ class Request
         $param_value = 'index';
 
         if (preg_match($pattern, $request_uri, $matches)) {
-            $param_value = isset($matches[1]) ? $matches[1] : null;
+            if (isset($matches[1]))
+                $param_value = $matches[1];
         }
         
         $this->task = $param_value;

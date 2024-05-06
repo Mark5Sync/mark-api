@@ -84,7 +84,7 @@ abstract class Doc
         return $result;
     }
 
-    protected function TOKEN(string $token)
+    protected function _TOKEN(string $token)
     {
         return true;
     }
@@ -95,7 +95,7 @@ abstract class Doc
     {
         $this->request->isDebug = true;
 
-        if (!$this->TOKEN($token))
+        if (!$this->_TOKEN($token))
             throw new \Exception("Invalid token", 3);
 
 
