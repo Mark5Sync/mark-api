@@ -1,7 +1,7 @@
 <?php
 namespace markapi\_markers;
-use markapi\exec\Executor;
 use marksync\provider\provider;
+use markapi\exec\Executor;
 
 /**
  * @property-read Executor $executor
