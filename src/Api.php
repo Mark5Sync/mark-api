@@ -29,6 +29,7 @@ abstract class Api extends Doc
                 'code' => $th->getCode(),
             ];
             $this->onError($th);
+            http_response_code(400);
         }
 
         if ($this->redirect->to)
@@ -115,7 +116,8 @@ abstract class Api extends Doc
                 return $this->request->isDebug ? $result : $this->onResult($result);
             }
         } catch (\ArgumentCountError $th) {
-            throw new \Exception("Задача [$task] ожидает другого количества аргументов", 888);
+            http_response_code(527);
+            throw new \Exception("Задача [$task] ожидает другого количества аргументов", 527);
         }
 
         throw new \Exception("[$task] - не определена", 1);

@@ -44,7 +44,7 @@ class TypescriptClient
 
         $time = microtime(true);
             $this->runTest();
-            $this->tunTests();
+            $this->runTests();
         $this->time = microtime(true) - $time;
 
         return $this;
@@ -140,7 +140,7 @@ class TypescriptClient
 
 
 
-    private function tunTests()
+    private function runTests()
     {
         $tests = $this->refMethod->getAttributes(Tests::class);
         foreach ($tests as $test) {

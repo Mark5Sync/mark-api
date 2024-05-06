@@ -95,17 +95,23 @@ abstract class Doc
     {
         $this->request->isDebug = true;
 
-        if (!$this->_TOKEN($token))
-            throw new \Exception("Invalid token", 3);
+        if (!$this->_TOKEN($token)) {
+            http_response_code(401);
+            throw new \Exception("Invalid token", 401);
+        }
 
 
         $resultOutput = [];
         $resultMethods = [];
         $times = [];
+        $docs = [];
+
+
 
 
         foreach ($this->iterateModules(true) as $module => $refMethods) {
 
+            /** @var \ReflectionMethod $refMethod */
             foreach ($refMethods as $refMethod) {
                 $tests = $this->typescriptClient()->analysis($module, $refMethod, function ($result) {
                     return $this->onResult($result);
@@ -114,9 +120,13 @@ abstract class Doc
                 if ($tests->pass)
                     continue;
 
+
                 $resultOutput = [...$resultOutput, ...$tests->output];
                 $resultMethods[$tests->methodName] = $tests->argsExists;
                 $times[$tests->methodName] = $tests->time;
+
+                if ($doc = $refMethod->getDocComment())
+                    $docs[$tests->methodName] = $doc;
             }
         }
 
@@ -129,6 +139,8 @@ abstract class Doc
             'types' => $resultOutput,
             'module' => $this->getTraitsMethods(array_keys($resultMethods)),
             'times' => $times,
+            'docs' => $docs,
+            'tags' => $this->tags->getTags(),
         ];
     }
 

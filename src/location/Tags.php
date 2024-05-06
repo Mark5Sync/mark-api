@@ -5,20 +5,22 @@ namespace markapi\location;
 use markapi\_markers\location;
 
 
-class Tags {
+class Tags
+{
     use location;
 
     private $list = [];
 
-    function add(...$tags){
+    function add(...$tags)
+    {
         foreach ($tags as $tag) {
             $this->list[$this->request->task][$tag] = true;
         }
     }
 
 
-    function getTags() {
-        return array_keys($this->list);
+    function getTags()
+    {
+        return array_map(fn($items) => array_keys($items), $this->list);
     }
-
 }
