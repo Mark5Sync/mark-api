@@ -20,16 +20,16 @@ abstract class Doc
 
     protected $modules = [];
 
-    protected function modules(): array
+    protected function _modules(): array
     {
         return [];
     }
 
 
-    private function ownMethods($reflectionModule)
+    private function _ownMethods($reflectionModule)
     {
         $classMethods = $reflectionModule->getMethods(ReflectionMethod::IS_PUBLIC);
-        $classMethods = $this->methodHasTest($classMethods);
+        $classMethods = $this->_methodHasTest($classMethods);
 
         $inheritedMethods = [];
         if ($reflectionModule->getParentClass()) {
@@ -50,7 +50,7 @@ abstract class Doc
 
 
 
-    private function methodHasTest(array $refMethods)
+    private function _methodHasTest(array $refMethods)
     {
         $filter = array_filter($refMethods, function ($method) {
             if (!empty($method->getAttributes(Test::class)))
@@ -67,19 +67,19 @@ abstract class Doc
 
 
 
-    protected function iterateModules($useReflection = false)
+    protected function _iterateModules($useReflection = false)
     {
         foreach ([$this, ...$this->modules] as $module) {
             if (!$useReflection)
                 yield $module => [];
 
             $reflectionModule = new ReflectionClass($module);
-            yield $module => $this->ownMethods($reflectionModule);
+            yield $module => $this->_ownMethods($reflectionModule);
         }
     }
 
 
-    protected function onResult($result)
+    protected function _onResult($result)
     {
         return $result;
     }
@@ -109,12 +109,12 @@ abstract class Doc
 
 
 
-        foreach ($this->iterateModules(true) as $module => $refMethods) {
+        foreach ($this->_iterateModules(true) as $module => $refMethods) {
 
             /** @var \ReflectionMethod $refMethod */
             foreach ($refMethods as $refMethod) {
                 $tests = $this->typescriptClient()->analysis($module, $refMethod, function ($result) {
-                    return $this->onResult($result);
+                    return $this->_onResult($result);
                 });
 
                 if ($tests->pass)
@@ -126,7 +126,7 @@ abstract class Doc
                 $times[$tests->methodName] = $tests->time;
 
                 if ($doc = $refMethod->getDocComment())
-                    $docs[$tests->methodName] = $doc;
+                    $docs[$tests->methodName] = trim(str_replace(['*', '/'], '', $doc), "\n");
             }
         }
 
@@ -137,7 +137,7 @@ abstract class Doc
         return [
             'methods' => $resultMethods,
             'types' => $resultOutput,
-            'module' => $this->getTraitsMethods(array_keys($resultMethods)),
+            'module' => $this->_getTraitsMethods(array_keys($resultMethods)),
             'times' => $times,
             'docs' => $docs,
             'tags' => $this->tags->getTags(),
@@ -145,7 +145,7 @@ abstract class Doc
     }
 
 
-    private function getTraitsMethods($methods)
+    private function _getTraitsMethods($methods)
     {
         $classReflection = new ReflectionClass($this);
         $traits = $classReflection->getTraits();
@@ -166,7 +166,7 @@ abstract class Doc
     }
 
 
-    protected function checkMode(string $methodName, $props)
+    protected function _checkMode(string $methodName, $props)
     {
         if (empty($props))
             return;
