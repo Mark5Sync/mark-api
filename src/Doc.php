@@ -26,10 +26,10 @@ abstract class Doc
     }
 
 
-    private function _ownMethods($reflectionModule)
+    private function ownMethods($reflectionModule)
     {
         $classMethods = $reflectionModule->getMethods(ReflectionMethod::IS_PUBLIC);
-        $classMethods = $this->_methodHasTest($classMethods);
+        $classMethods = $this->methodHasTest($classMethods);
 
         $inheritedMethods = [];
         if ($reflectionModule->getParentClass()) {
@@ -50,7 +50,7 @@ abstract class Doc
 
 
 
-    private function _methodHasTest(array $refMethods)
+    private function methodHasTest(array $refMethods)
     {
         $filter = array_filter($refMethods, function ($method) {
             if (!empty($method->getAttributes(Test::class)))
@@ -67,35 +67,34 @@ abstract class Doc
 
 
 
-    protected function _iterateModules($useReflection = false)
+    protected function iterateModules($useReflection = false)
     {
         foreach ([$this, ...$this->modules] as $module) {
             if (!$useReflection)
                 yield $module => [];
 
             $reflectionModule = new ReflectionClass($module);
-            yield $module => $this->_ownMethods($reflectionModule);
+            yield $module => $this->ownMethods($reflectionModule);
         }
     }
 
 
-    protected function _onResult($result)
+    protected function onResult($result)
     {
         return $result;
     }
 
-    protected function _TOKEN(string $token)
+    protected function verifyToken(string $token): bool
     {
         return true;
     }
-
 
 
     public function __DOC__(string $token = 'no-token')
     {
         $this->request->isDebug = true;
 
-        if (!$this->_TOKEN($token)) {
+        if (!$this->verifyToken($token)) {
             http_response_code(401);
             throw new \Exception("Invalid token", 401);
         }
@@ -109,12 +108,12 @@ abstract class Doc
 
 
 
-        foreach ($this->_iterateModules(true) as $module => $refMethods) {
+        foreach ($this->iterateModules(true) as $module => $refMethods) {
 
             /** @var \ReflectionMethod $refMethod */
             foreach ($refMethods as $refMethod) {
                 $tests = $this->typescriptClient()->analysis($module, $refMethod, function ($result) {
-                    return $this->_onResult($result);
+                    return $this->onResult($result);
                 });
 
                 if ($tests->pass)
@@ -137,7 +136,7 @@ abstract class Doc
         return [
             'methods' => $resultMethods,
             'types' => $resultOutput,
-            'module' => $this->_getTraitsMethods(array_keys($resultMethods)),
+            'module' => $this->getTraitsMethods(array_keys($resultMethods)),
             'times' => $times,
             'docs' => $docs,
             'tags' => $this->tags->getTags(),
@@ -145,7 +144,7 @@ abstract class Doc
     }
 
 
-    private function _getTraitsMethods($methods)
+    private function getTraitsMethods($methods)
     {
         $classReflection = new ReflectionClass($this);
         $traits = $classReflection->getTraits();
@@ -166,7 +165,7 @@ abstract class Doc
     }
 
 
-    protected function _checkMode(string $methodName, $props)
+    protected function checkMode(string $methodName, $props)
     {
         if (empty($props))
             return;
@@ -198,5 +197,21 @@ abstract class Doc
                 }
             }
         }
+    }
+
+
+    protected function testExists(string $task)
+    {
+        if (!method_exists($this, $task))
+            return false;
+
+        $method = new ReflectionMethod($this, $task);
+        if (!empty($method->getAttributes(Test::class)))
+            return true;
+
+        if (!empty($method->getAttributes(Tests::class)))
+            return true;
+
+        return false;
     }
 }

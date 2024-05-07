@@ -107,17 +107,22 @@ abstract class Api extends Doc
 
     private function applyTask(string $task)
     {
-        if (!in_array($task, ['__doc__', '_']))
-            $task = trim($task, '_');
+        if (!in_array($task, ['__doc__', '_'])) {
+            if (!$this->testExists($task)) {
+                http_response_code(527);
+                throw new \Exception("Задача не существует [$task]", 527);
+            }
+        }
+
+
+
 
         try {
-            if (method_exists($this, $task)) {
-                $result = $this->run($task, $this->request->getParamsFor($this, $task));
-                return $this->request->isDebug ? $result : $this->onResult($result);
-            }
+            $result = $this->run($task, $this->request->getParamsFor($this, $task));
+            return $this->request->isDebug ? $result : $this->onResult($result);
         } catch (\ArgumentCountError $th) {
-            http_response_code(527);
-            throw new \Exception("Задача [$task] ожидает другого количества аргументов", 527);
+            http_response_code(528);
+            throw new \Exception("Задача [$task] ожидает другого количества аргументов", 528);
         }
 
         throw new \Exception("[$task] - не определена", 1);
@@ -126,7 +131,8 @@ abstract class Api extends Doc
 
 
 
-    function _($props){
+    function _($props)
+    {
 
         die(json_encode(['_' => 'me']));
 
