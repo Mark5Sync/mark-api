@@ -27,7 +27,6 @@ trait ormPlugin__apiTools
 
     function useTest()
     {
-
         $this->where(
             test: $this->request->isDebug
                     ? 1
