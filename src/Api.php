@@ -9,6 +9,7 @@ abstract class Api extends Doc
     use location;
 
     public $prefix = 'api';
+    
 
     final function __construct()
     {

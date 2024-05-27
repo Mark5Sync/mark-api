@@ -2,6 +2,7 @@
 
 namespace markapi;
 
+use Composer\ClassMapGenerator\ClassMapGenerator;
 use markapi\_markers\doc_clients;
 use markapi\_markers\exec;
 use markapi\_markers\location;
@@ -18,6 +19,7 @@ abstract class Doc
     use doc_clients;
     use exec;
 
+    protected $routes = './';
     protected $modules = [];
 
     protected function _modules(): array
@@ -67,16 +69,16 @@ abstract class Doc
 
 
 
-    protected function iterateModules($useReflection = false)
-    {
-        foreach ([$this, ...$this->modules] as $module) {
-            if (!$useReflection)
-                yield $module => [];
+    // protected function iterateModules($useReflection = false)
+    // {
+    //     foreach ([$this, ...$this->modules] as $module) {
+    //         if (!$useReflection)
+    //             yield $module => [];
 
-            $reflectionModule = new ReflectionClass($module);
-            yield $module => $this->ownMethods($reflectionModule);
-        }
-    }
+    //         $reflectionModule = new ReflectionClass($module);
+    //         yield $module => $this->ownMethods($reflectionModule);
+    //     }
+    // }
 
 
     protected function onResult($result)
@@ -100,48 +102,64 @@ abstract class Doc
         }
 
 
-        $resultOutput = [];
-        $resultMethods = [];
-        $times = [];
-        $docs = [];
+        // $resultOutput = [];
+        // $resultMethods = [];
+        // $times = [];
+        // $docs = [];
+
+        $this->findRoutes($this->routes);
+
+        return $this->apiResult->getResult();
+
+        // foreach ($routes as $class) {
+        //     $tests = $this->typescriptClient()->analysis($class, function ($result) {
+        //         return $this->onResult($result);
+        //     });
+        //     if ($tests->pass)
+        //         continue;
+        //     $resultOutput = [...$resultOutput, ...$tests->output];
+        //     $resultMethods[$tests->methodName] = $tests->argsExists;
+        //     $times[$tests->methodName] = $tests->time;
+        //     if ($doc = $refMethod->getDocComment())
+        //         $docs[$tests->methodName] = trim(str_replace(['*', '/'], '', $doc), "\n");
+        // }
 
 
-
-
-        foreach ($this->iterateModules(true) as $module => $refMethods) {
-
-            /** @var \ReflectionMethod $refMethod */
-            foreach ($refMethods as $refMethod) {
-                $tests = $this->typescriptClient()->analysis($module, $refMethod, function ($result) {
-                    return $this->onResult($result);
-                });
-
-                if ($tests->pass)
-                    continue;
-
-
-                $resultOutput = [...$resultOutput, ...$tests->output];
-                $resultMethods[$tests->methodName] = $tests->argsExists;
-                $times[$tests->methodName] = $tests->time;
-
-                if ($doc = $refMethod->getDocComment())
-                    $docs[$tests->methodName] = trim(str_replace(['*', '/'], '', $doc), "\n");
-            }
-        }
-
-
-
-
-
-        return [
-            'methods' => $resultMethods,
-            'types' => $resultOutput,
-            'module' => $this->getTraitsMethods(array_keys($resultMethods)),
-            'times' => $times,
-            'docs' => $docs,
-            'tags' => $this->tags->getTags(),
-        ];
+        // return [
+        //     'methods' => $resultMethods,
+        //     'types' => $resultOutput,
+        //     'module' => $this->getTraitsMethods(array_keys($resultMethods)),
+        //     'times' => $times,
+        //     'docs' => $docs,
+        //     'tags' => $this->tags->getTags(),
+        // ];
     }
+
+
+    function findRoutes($folder)
+    {
+        $map = ClassMapGenerator::createMap($folder);
+
+
+        foreach ($map as $class => $path) {
+            try {
+                $reflection = new \ReflectionClass($class);
+            } catch (\ReflectionException $th) {
+                echo "\n\n{$th->getMessage()}\n\n";
+            } catch (\Throwable $th) {
+                echo "\n\n -- {$th->getMessage()}\n\n";
+            }
+
+            if (!$reflection->isSubclassOf(Route::class))
+                continue;
+
+
+            $this->createTypescriptClient($class)->analysis(fn($result) => $this->onResult($result));
+        }
+    }
+
+
+
 
 
     private function getTraitsMethods($methods)

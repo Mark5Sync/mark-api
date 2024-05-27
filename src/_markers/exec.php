@@ -10,6 +10,6 @@ use markapi\exec\Executor;
 trait exec {
     use provider;
 
-   function executor(): Executor { return new Executor; }
+   function createExecutor(): Executor { return new Executor; }
 
 }

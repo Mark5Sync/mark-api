@@ -1,14 +1,14 @@
 <?php
 namespace markapi\_markers;
 use marksync\provider\provider;
-use markapi\location\pagination\Pagination;
 use markapi\location\Request;
+use markapi\location\pagination\Pagination;
 use markapi\location\Tags;
 use markapi\location\Redirect;
 
 /**
- * @property-read Pagination $pagination
  * @property-read Request $request
+ * @property-read Pagination $pagination
  * @property-read Tags $tags
  * @property-read Redirect $redirect
 
@@ -16,9 +16,9 @@ use markapi\location\Redirect;
 trait location {
     use provider;
 
-   function pagination(): Pagination { return new Pagination; }
-   function request(): Request { return new Request; }
-   function tags(): Tags { return new Tags; }
-   function redirect(): Redirect { return new Redirect; }
+   function createRequest(): Request { return new Request; }
+   function createPagination(): Pagination { return new Pagination; }
+   function createTags(): Tags { return new Tags; }
+   function createRedirect(): Redirect { return new Redirect; }
 
 }

@@ -12,7 +12,7 @@ use markapi\DEV\Test;
 trait DEV {
     use provider;
 
-   function tests(): Tests { return new Tests; }
-   function test(): Test { return new Test; }
+   function createTests(): Tests { return new Tests; }
+   function createTest(): Test { return new Test; }
 
 }

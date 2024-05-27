@@ -1,0 +1,9 @@
+@field,id,userId,login,password_hash
+@type,int,int,string,varchar(255)
+@isNull,,,,1
+@key,pri,,,
+@default,NULL,,,NULL
+@extra,auto_increment,,,
+@relationTable,,users,,
+@relationColl,,id,,
+---,---,---,---,---

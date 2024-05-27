@@ -152,16 +152,16 @@
         },
         {
             "name": "marksync/provider",
-            "version": "v1.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mark5Sync/provider.git",
-                "reference": "acdd80f286c759ccfa75bbc94146daff3b580465"
+                "reference": "8199bd9a288316542a48e0beab0d40c2f7cc207b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mark5Sync/provider/zipball/acdd80f286c759ccfa75bbc94146daff3b580465",
-                "reference": "acdd80f286c759ccfa75bbc94146daff3b580465",
+                "url": "https://api.github.com/repos/Mark5Sync/provider/zipball/8199bd9a288316542a48e0beab0d40c2f7cc207b",
+                "reference": "8199bd9a288316542a48e0beab0d40c2f7cc207b",
                 "shasum": ""
             },
             "require": {
@@ -189,9 +189,9 @@
             "description": "provider",
             "support": {
                 "issues": "https://github.com/Mark5Sync/provider/issues",
-                "source": "https://github.com/Mark5Sync/provider/tree/v1.0.0"
+                "source": "https://github.com/Mark5Sync/provider/tree/v1.1.0"
             },
-            "time": "2024-03-18T10:00:20+00:00"
+            "time": "2024-05-07T13:47:18+00:00"
         },
         {
             "name": "symfony/finder",
