@@ -154,7 +154,8 @@ abstract class Doc
                 continue;
 
 
-            $this->createTypescriptClient($class)->analysis(fn($result) => $this->onResult($result));
+            $this->createModuleTestContainer($reflection->getShortName(), new $class)->analysis(fn($result) => $this->onResult($result));
+            // $this->createTypescriptClient($class)->analysis(fn($result) => $this->onResult($result));
         }
     }
 

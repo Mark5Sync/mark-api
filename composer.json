@@ -18,6 +18,7 @@
         "mark": "php vendor\/bin\/mark"
     },
     "require": {
-        "marksync/provider": "^1.0"
+        "marksync/provider": "^1.0",
+        "marksync/orm": "^1.0"
     }
 }

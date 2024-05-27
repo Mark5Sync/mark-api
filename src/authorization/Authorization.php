@@ -10,12 +10,12 @@ use markapi\Route;
 abstract class Authorization extends Route
 {
     use _markersAuthorization;
-    protected ?int $userId = null;
+    protected ?int $id = null;
 
 
     function __construct()
     {
-        $this->userId = $this->session->get('UserId', null);
+        $this->id = $this->session->get('id', null);
     }
 
 
@@ -38,14 +38,16 @@ abstract class Authorization extends Route
 
 
     #[Test('picus.2022@mail.ru', '111')]
-    function singIn(string $email, string $password)
+    function singIn(string $login, string $password)
     {
-        $this->authorizationModel->where(login: $email)->selectRow(id: $userId, password_hash: $password_hash);
+        $this->authorizationModel->where(login: $login)->selectRow(id: $authId, password_hash: $password_hash);
 
-        if (!$userId || !$this->hash->verifyUserPasswordHash($password, $password_hash))
+        if (!$authId || !$this->hash->verifyUserPasswordHash($password, $password_hash))
             throw new \Exception("Неправильный логин или пароль", 1);
 
-        $this->session->set('UserId', $userId);
+        $this->session->set('authId', $authId);
+    
+        return true;
     }
 
 
@@ -53,5 +55,18 @@ abstract class Authorization extends Route
     function singOut()
     {
         $this->session->remove('UserId');
+    }
+
+
+
+
+    function add(string $login, string $password, ?array $permissions = null): int
+    {
+        return 4;
+    }
+
+    
+    function changePassword(string $email, string $oldPassword, string $newPassword)
+    {
     }
 }

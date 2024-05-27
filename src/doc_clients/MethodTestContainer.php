@@ -8,6 +8,7 @@ use markapi\_markers\location;
 use markapi\_types\Join;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
+use markapi\Route;
 use marksync\provider\MarkInstance;
 
 #[MarkInstance]
@@ -31,7 +32,7 @@ class MethodTestContainer
 
 
 
-    function __construct(private string $class, private string $method)
+    function __construct(private Route $class, private string $method)
     {
         $this->ref = new \ReflectionMethod($class, $method);
     }
