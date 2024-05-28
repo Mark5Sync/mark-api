@@ -1,18 +1,18 @@
 <?php
 namespace markapi\_markers;
 use marksync\provider\provider;
-use markapi\DEV\Test;
 use markapi\DEV\Tests;
+use markapi\DEV\Test;
 
 /**
- * @property-read Test $test
  * @property-read Tests $tests
+ * @property-read Test $test
 
 */
 trait DEV {
     use provider;
 
-   function createTest(): Test { return new Test; }
    function createTests(): Tests { return new Tests; }
+   function createTest(): Test { return new Test; }
 
 }

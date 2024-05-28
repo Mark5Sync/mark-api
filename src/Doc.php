@@ -8,6 +8,7 @@ use markapi\_markers\exec;
 use markapi\_markers\location;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
+use markapi\doc_clients\TaskSandbox;
 use marksync\provider\NotMark;
 use ReflectionClass;
 use ReflectionMethod;
@@ -101,38 +102,9 @@ abstract class Doc
             throw new \Exception("Invalid token", 401);
         }
 
-
-        // $resultOutput = [];
-        // $resultMethods = [];
-        // $times = [];
-        // $docs = [];
-
         $this->findRoutes($this->routes);
 
         return $this->apiResult->getResult();
-
-        // foreach ($routes as $class) {
-        //     $tests = $this->typescriptClient()->analysis($class, function ($result) {
-        //         return $this->onResult($result);
-        //     });
-        //     if ($tests->pass)
-        //         continue;
-        //     $resultOutput = [...$resultOutput, ...$tests->output];
-        //     $resultMethods[$tests->methodName] = $tests->argsExists;
-        //     $times[$tests->methodName] = $tests->time;
-        //     if ($doc = $refMethod->getDocComment())
-        //         $docs[$tests->methodName] = trim(str_replace(['*', '/'], '', $doc), "\n");
-        // }
-
-
-        // return [
-        //     'methods' => $resultMethods,
-        //     'types' => $resultOutput,
-        //     'module' => $this->getTraitsMethods(array_keys($resultMethods)),
-        //     'times' => $times,
-        //     'docs' => $docs,
-        //     'tags' => $this->tags->getTags(),
-        // ];
     }
 
 
@@ -153,14 +125,55 @@ abstract class Doc
             if (!$reflection->isSubclassOf(Route::class))
                 continue;
 
+            $module = new $class;
+            $moduleName = $reflection->getShortName();
 
-            $this->createModuleTestContainer($reflection->getShortName(), new $class)->analysis(fn($result) => $this->onResult($result));
-            // $this->createTypescriptClient($class)->analysis(fn($result) => $this->onResult($result));
+            foreach ($this->getTaskNameList($class) as $taskName) {
+                $task = new TaskSandbox($module, $moduleName, $taskName, fn ($result) => $this->onResult($result));
+
+                $task->run();
+
+                $this->apiResult
+                    ->pushMethod($task->query, $task->args)
+                    ->pushGroup($task->query, $moduleName)
+
+                    ->pushInputType($task->query,  $task->input,  $task->args['input'] )
+                    ->pushOutputType($task->query, $task->output, $task->args['output'])
+
+                    ->pushMain($task->query, $class, $taskName)
+                    ->pushTime($task->query, $task->time)
+                    ->pushDocs($task->query, $task->docs);
+            }
         }
     }
 
 
+    private function getTaskNameList($class)
+    {
+        $methods = get_class_methods($class);
 
+        $tasks = [];
+        foreach ($methods as $method) {
+            if ($this->checkTestExists($class, $method))
+                $tasks[] = $method;
+        }
+
+        return $tasks;
+    }
+
+
+
+    private function checkTestExists($class, $method)
+    {
+        $method = new ReflectionMethod($class, $method);
+        if (!empty($method->getAttributes(Test::class)))
+            return true;
+
+        if (!empty($method->getAttributes(Tests::class)))
+            return true;
+
+        return false;
+    }
 
 
     private function getTraitsMethods($methods)
@@ -216,21 +229,5 @@ abstract class Doc
                 }
             }
         }
-    }
-
-
-    protected function testExists(string $task)
-    {
-        if (!method_exists($this, $task))
-            return false;
-
-        $method = new ReflectionMethod($this, $task);
-        if (!empty($method->getAttributes(Test::class)))
-            return true;
-
-        if (!empty($method->getAttributes(Tests::class)))
-            return true;
-
-        return false;
     }
 }

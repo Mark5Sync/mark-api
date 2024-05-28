@@ -8,58 +8,53 @@ use markapi\_markers\location;
 use markapi\_types\Join;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
-use markapi\Route;
 use marksync\provider\MarkInstance;
 
 #[MarkInstance]
-class MethodTestContainer
+class TaskSandbox
 {
     use location;
     use exec;
     use doc_clients;
 
     private \ReflectionMethod $ref;
-    private mixed $onResult = null;
-    public $methodName;
-    private $typeName;
 
+    public string $query;
+    public $args = [
+        'input' => false,
+        'output' => false,
+    ];
 
-    public $argsExists = [];
-
+    public $input;
     public $output;
+    
     public $pass = true;
     public $time = 0;
+    public $docs = null;
 
 
 
-    function __construct(private Route $class, private string $method)
+    function __construct(private mixed $module, private string $moduleName, private string $task, private $onResult = null)
     {
-        $this->ref = new \ReflectionMethod($class, $method);
+        $this->query = $moduleName . ucfirst($task);
+        $this->ref = new \ReflectionMethod($module, $task);
     }
 
-    function analysis(callable $onResult)
+
+
+    function run()
     {
-        $this->onResult = $onResult;
-        // $this->refMethod = $refMethod;
-        // $this->methodName = $refMethod->getName();
-        // $this->tags->key = $this->methodName;
-        // $resultMethods[$this->methodName] = [];
-        // $this->typeName = ucwords($this->methodName);
-
-
         $this->checkInput();
 
         $time = microtime(true);
         $this->runTest();
         $this->runTests();
         $this->time = microtime(true) - $time;
-
-        return $this;
     }
 
 
 
-    private function getInputType($title, $name, $canToBeNull)
+    private function getInputType($name, $canToBeNull)
     {
         $result = null;
         switch ($name) {
@@ -84,7 +79,7 @@ class MethodTestContainer
         }
 
         if ($canToBeNull)
-            return new Join($title, [null, $result]);
+            return new Join($this->query, [null, $result]);
 
         return $result;
     }
@@ -100,14 +95,16 @@ class MethodTestContainer
             if (!$type)
                 $type = 'null';
             else if ($type instanceof \ReflectionNamedType)
-                $type = $this->getInputType($this->typeName, $type->getName(), $parameter->allowsNull()); // ($parameter->allowsNull() ? new Join($typeName, [null, $type->getName()]) : $type->getName());
+                $type = $this->getInputType($type->getName(), $parameter->allowsNull()); // ($parameter->allowsNull() ? new Join($typeName, [null, $type->getName()]) : $type->getName());
             else if ($type instanceof \ReflectionUnionType)
                 $type = array_map(fn ($tp) => "$tp", $type->getTypes());
 
+            if (!$this->input)
+                $this->input = [];
 
-            $this->output["{$this->typeName}Input"][$parameter->getName()] = $type;
+            $this->input[$parameter->getName()] = $type;
 
-            $this->argsExists['input'] = true;
+            $this->args['input'] = true;
         }
     }
 
@@ -115,22 +112,21 @@ class MethodTestContainer
 
     private function runTest()
     {
-        $tests = $this->refMethod->getAttributes(Test::class);
+        $tests = $this->ref->getAttributes(Test::class);
         foreach ($tests as $test) {
             $this->pass = false;
             $this->request->debugClear();
             $props = ($test->newInstance())->props;
 
             try {
-                $result = $this->wrapResult(fn () => $this->module->{$this->methodName}(...(array)$props));
-                // $result = $this->executor->runWithCorrectionPropsType($this, $refMethod, (array)$props);
+                $result = $this->wrapResult(fn () => $this->module->{$this->task}(...(array)$props));
             } catch (\Throwable $th) {
-                $this->catchTestMessage($this->methodName, var_export($props, true), $th->getMessage());
-                $result = null; //new Join($typeName, ['Error' => $th->getMessage()]);
+                $this->catchTestMessage(var_export($props, true), $th->getMessage());
+                $result = null;
             }
 
-            $this->output["{$this->typeName}Output"] = $result;
-            $this->argsExists['output'] = true;
+            $this->output = $result;
+            $this->args['output'] = true;
         }
     }
 
@@ -150,7 +146,7 @@ class MethodTestContainer
 
     private function runTests()
     {
-        $tests = $this->refMethod->getAttributes(Tests::class);
+        $tests = $this->ref->getAttributes(Tests::class);
         foreach ($tests as $test) {
             $this->pass = false;
             $propsList = ($test->newInstance())->tests;
@@ -161,26 +157,27 @@ class MethodTestContainer
                 $this->request->debugClear();
                 $props = is_array($props) ? $props : [$props];
                 try {
-                    $testResult[] = $this->wrapResult(fn () => $this->module->{$this->methodName}(...$props));
+                    $testResult[] = $this->wrapResult(fn () => $this->module->{$this->task}(...$props));
                 } catch (\Throwable $th) {
-                    $this->catchTestMessage($this->methodName, var_export($props, true), $th->getMessage());
-                    $testResult[] = null; // new Join($typeName, ['Error' => $th->getMessage()]);
+                    $this->catchTestMessage(var_export($props, true), $th->getMessage());
+                    $testResult[] = null;
                 }
             }
 
-            $this->output["{$this->typeName}Output"] = new Join($this->typeName, $testResult);
-            $this->argsExists['output'] = true;
+            $this->output = new Join($this->task, $testResult);
+            $this->args['output'] = true;
         }
     }
 
 
 
-    private function catchTestMessage($method, $props, $message)
+    private function catchTestMessage($props, $message)
     {
         $message = <<<ERROR
         tunTests:
-        {$method}({$props}) // {$message}
+        {$this->task}({$props}) // {$message}
         ERROR;
-        $this->request->exception(new \Exception(str_replace("\n", "", $message), 999), $method);
+
+        $this->request->exception(new \Exception(str_replace("\n", "", $message), 999), $this->task);
     }
 }
