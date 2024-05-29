@@ -106,28 +106,32 @@ abstract class Api extends Doc
     }
 
 
-    private function applyTask(string $task)
+    private function applyTask(string $query)
     {
-        if (!in_array($task, ['__doc__', '_'])) {
+        if (!in_array($query, ['__doc__', '_'])) {
             $scheme = file_exists("{$this->routes}/scheme.json") ? json_decode(file_get_contents("{$this->routes}/scheme.json"), true) : [];
 
-            if (!isset($scheme[$task])) {
+            if (!isset($scheme[$query])) {
                 http_response_code(527);
-                throw new \Exception("Задача не существует [$task]", 527);
+                throw new \Exception("Задача не существует [$query]", 527);
             }
 
-            ['route' => $route, 'task' => $task] = $scheme[$task];
+            ['route' => $route, 'task' => $task] = $scheme[$query];
+            $class = $route ? new $route : $this;
 
-            if (!$this->checkTestExists($route ? new $route : $this, $task)) {
+            if (!$this->checkTestExists($class, $task)) {
                 http_response_code(528);
                 throw new \Exception("Задача не существует [$task]", 528);
             }
+        } else {
+            $class = $this;
         }
 
 
 
         try {
-            $result = $this->run($route ? new $route : $this, $task, $this->request->getParamsFor($this, $task));
+            $params = $this->request->getParamsFor($class, $task);
+            $result = $this->run($class, $task, $params);
             return $this->request->isDebug ? $result : $this->onResult($result);
         } catch (\ArgumentCountError $th) {
             http_response_code(528);
