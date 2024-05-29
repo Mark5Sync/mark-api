@@ -21,7 +21,7 @@ class Request
         $request_uri = $_SERVER['REQUEST_URI'];
         $pattern = "/\/$prefix\/([\w_]+)?\??/";
 
-        $param_value = 'index';
+        $param_value = 'Index';
 
         if (preg_match($pattern, $request_uri, $matches)) {
             if (isset($matches[1]))

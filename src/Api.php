@@ -109,7 +109,9 @@ abstract class Api extends Doc
     private function applyTask(string $query)
     {
         if (!in_array($query, ['__doc__', '_'])) {
-            $scheme = file_exists("{$this->routes}/scheme.json") ? json_decode(file_get_contents("{$this->routes}/scheme.json"), true) : [];
+            $scheme = file_exists("{$this->routes}/scheme.json")
+                ? json_decode(file_get_contents("{$this->routes}/scheme.json"), true)
+                : [];
 
             if (!isset($scheme[$query])) {
                 http_response_code(527);
@@ -125,6 +127,7 @@ abstract class Api extends Doc
             }
         } else {
             $class = $this;
+            $task  = $query;
         }
 
 
