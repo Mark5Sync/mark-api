@@ -1,9 +1,0 @@
-@field,id,login,password_hash,isTempPassword,permissions
-@type,int,string,string,int(1),string
-@isNull,,,1,1,1
-@key,pri,,,,
-@default,NULL,,NULL,NULL,NULL
-@extra,auto_increment,,,,
-@relationTable,,,,,
-@relationColl,,,,,
----,---,---,---,---,---
