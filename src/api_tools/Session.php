@@ -1,6 +1,6 @@
 <?php
 
-namespace markapi\authorization;
+namespace markapi\api_tools;
 
 
 class Session

@@ -9,6 +9,7 @@ use markapi\_markers\location;
 use markapi\DEV\Test;
 use markapi\DEV\Tests;
 use markapi\doc_clients\TaskSandbox;
+use marksync\provider\NamespaceController;
 use marksync\provider\NotMark;
 use ReflectionClass;
 use ReflectionMethod;
@@ -20,7 +21,9 @@ abstract class Doc
     use doc_clients;
     use exec;
 
-    protected $routes = './';
+    protected string $routes = './';
+    protected ?string $namespace = null;
+
     protected $modules = [];
 
     protected function _modules(): array
@@ -88,7 +91,7 @@ abstract class Doc
             throw new \Exception("Invalid token", 401);
         }
 
-        $this->findRoutes($this->routes);
+        $this->findRoutes();
 
         $this->buildScheme();
 
@@ -103,13 +106,17 @@ abstract class Doc
 
 
 
-    function findRoutes($folder)
+    function findRoutes()
     {
-        $map = ClassMapGenerator::createMap($folder);
-
-
         foreach ($this->getTaskNameList($this) as $taskName) {
             $this->runTests($this, '', '', $taskName);
+        }
+
+
+        $map = ClassMapGenerator::createMap($this->routes);
+        if ($this->namespace) {
+            $ns = new NamespaceController($this->routes, $this->namespace);
+            $ns->handle($map);
         }
 
 

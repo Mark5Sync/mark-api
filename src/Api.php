@@ -41,7 +41,6 @@ abstract class Api extends Doc
 
 
 
-
         $strResult = json_encode($result);
 
         if ($strResult === false)
@@ -80,9 +79,6 @@ abstract class Api extends Doc
     protected function onError(\Throwable $exception)
     {
     }
-
-
-
 
 
 

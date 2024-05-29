@@ -1,23 +1,15 @@
 <?php
 
-namespace markapi\authorization;
+namespace markapi\api_auth;
 
-use markapi\_markers\authorization as _markersAuthorization;
+use markapi\_markers\api_auth;
 use markapi\DEV\Test;
 use markapi\Route;
 
 
-abstract class Authorization extends Route
+abstract class AuthorizationRoute extends Route
 {
-    use _markersAuthorization;
-    protected ?int $id = null;
-
-
-    function __construct()
-    {
-        $this->id = $this->session->get('id', null);
-    }
-
+    use api_auth;
 
     private function emailIsValid(string $email)
     {
@@ -46,7 +38,7 @@ abstract class Authorization extends Route
             throw new \Exception("Неправильный логин или пароль", 1);
 
         $this->session->set('authId', $authId);
-    
+
         return true;
     }
 
@@ -65,7 +57,7 @@ abstract class Authorization extends Route
         return 4;
     }
 
-    
+
     function changePassword(string $email, string $oldPassword, string $newPassword)
     {
     }

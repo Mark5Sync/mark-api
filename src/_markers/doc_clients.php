@@ -12,6 +12,6 @@ trait doc_clients {
     use provider;
 
    function createApiResult(): ApiResult { return new ApiResult; }
-   function createTaskSandbox(mixed $module, string $task, $onResult): TaskSandbox { return new TaskSandbox($module, $task, $onResult); }
+   function createTaskSandbox(mixed $module, string $moduleName, string $task, $onResult): TaskSandbox { return new TaskSandbox($module, $moduleName, $task, $onResult); }
 
 }
