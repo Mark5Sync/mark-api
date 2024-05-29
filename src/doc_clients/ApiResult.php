@@ -16,9 +16,9 @@ class ApiResult
     private $boxes   = [];
 
 
-    function pushMain(string $module, string $route, string $task)
+    function pushMain(string $query, string $route, string $task)
     {
-        $this->boxes[$module . ucfirst($task)] = [
+        $this->boxes[$query] = [
             'route' => $route,
             'task' => $task
         ];
@@ -67,6 +67,13 @@ class ApiResult
         $this->module[$task] = $group;
 
         return $this;
+    }
+
+
+
+    function getScheme()
+    {
+        return $this->boxes;
     }
 
 

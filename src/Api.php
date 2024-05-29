@@ -9,7 +9,7 @@ abstract class Api extends Doc
     use location;
 
     public $prefix = 'api';
-    
+
 
     final function __construct()
     {
@@ -98,28 +98,36 @@ abstract class Api extends Doc
     }
 
 
-    private function run(string $task, array $props)
+    private function run($class, string $task, array $props)
     {
         $this->onInit($task);
 
-        return $this->{$task}(...$props);
+        return $class->{$task}(...$props);
     }
 
 
     private function applyTask(string $task)
     {
         if (!in_array($task, ['__doc__', '_'])) {
-            if (!$this->testExists($task)) {
+            $scheme = file_exists("{$this->routes}/scheme.json") ? json_decode(file_get_contents("{$this->routes}/scheme.json"), true) : [];
+
+            if (!isset($scheme[$task])) {
                 http_response_code(527);
                 throw new \Exception("Задача не существует [$task]", 527);
+            }
+
+            ['route' => $route, 'task' => $task] = $scheme[$task];
+
+            if (!$this->checkTestExists($route ? new $route : $this, $task)) {
+                http_response_code(528);
+                throw new \Exception("Задача не существует [$task]", 528);
             }
         }
 
 
 
-
         try {
-            $result = $this->run($task, $this->request->getParamsFor($this, $task));
+            $result = $this->run($route ? new $route : $this, $task, $this->request->getParamsFor($this, $task));
             return $this->request->isDebug ? $result : $this->onResult($result);
         } catch (\ArgumentCountError $th) {
             http_response_code(528);

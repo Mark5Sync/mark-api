@@ -68,20 +68,6 @@ abstract class Doc
 
 
 
-
-
-    // protected function iterateModules($useReflection = false)
-    // {
-    //     foreach ([$this, ...$this->modules] as $module) {
-    //         if (!$useReflection)
-    //             yield $module => [];
-
-    //         $reflectionModule = new ReflectionClass($module);
-    //         yield $module => $this->ownMethods($reflectionModule);
-    //     }
-    // }
-
-
     protected function onResult($result)
     {
         return $result;
@@ -104,13 +90,27 @@ abstract class Doc
 
         $this->findRoutes($this->routes);
 
+        $this->buildScheme();
+
         return $this->apiResult->getResult();
     }
+
+
+    private function buildScheme()
+    {
+        file_put_contents("{$this->routes}/scheme.json", json_encode($this->apiResult->getScheme()));
+    }
+
 
 
     function findRoutes($folder)
     {
         $map = ClassMapGenerator::createMap($folder);
+
+
+        foreach ($this->getTaskNameList($this) as $taskName) {
+            $this->runTests($this, '', '', $taskName);
+        }
 
 
         foreach ($map as $class => $path) {
@@ -126,25 +126,33 @@ abstract class Doc
                 continue;
 
             $module = new $class;
-            $moduleName = $reflection->getShortName();
+            $group = $reflection->getShortName();
 
             foreach ($this->getTaskNameList($class) as $taskName) {
-                $task = new TaskSandbox($module, $moduleName, $taskName, fn ($result) => $this->onResult($result));
-
-                $task->run();
-
-                $this->apiResult
-                    ->pushMethod($task->query, $task->args)
-                    ->pushGroup($task->query, $moduleName)
-
-                    ->pushInputType($task->query,  $task->input,  $task->args['input'] )
-                    ->pushOutputType($task->query, $task->output, $task->args['output'])
-
-                    ->pushMain($task->query, $class, $taskName)
-                    ->pushTime($task->query, $task->time)
-                    ->pushDocs($task->query, $task->docs);
+                $this->runTests($module, $class, $group, $taskName);
             }
         }
+    }
+
+
+    private function runTests($module, string $class, string $group, string $taskName)
+    {
+        $task = new TaskSandbox($module, $group, $taskName, fn ($result) => $this->onResult($result));
+
+        $task->run();
+
+        $this->apiResult
+            ->pushMain($task->query, $class, $taskName)
+
+
+            ->pushMethod($task->query, $task->args)
+            ->pushGroup($task->query, $group)
+
+            ->pushInputType($task->query,  $task->input,  $task->args['input'])
+            ->pushOutputType($task->query, $task->output, $task->args['output'])
+
+            ->pushTime($task->query, $task->time)
+            ->pushDocs($task->query, $task->docs);
     }
 
 
@@ -163,7 +171,7 @@ abstract class Doc
 
 
 
-    private function checkTestExists($class, $method)
+    protected function checkTestExists($class, $method)
     {
         $method = new ReflectionMethod($class, $method);
         if (!empty($method->getAttributes(Test::class)))
@@ -191,7 +199,6 @@ abstract class Doc
                 }
             }
         }
-
 
         return $result;
     }
